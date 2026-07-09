@@ -1,0 +1,4 @@
+name: NMinimapIrisBlocker
+version: '1.0-SNAPSHOT'
+main: su.nezushin.nminimapirisblocker.NMinimapIrisBlocker
+api-version: '1.21'

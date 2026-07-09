@@ -1,0 +1,21 @@
+
+language: en_US
+
+blocked-commands:
+  - minimap
+  - mm
+
+
+#You can add your own translations from any mods.
+#Unpack .jar mod as zip archive and go to the assets/<mod_name>/lang directory and take any string from json files.
+restricted-translations:
+  - 'iris.shaders.reloaded'
+
+
+#How much wait after player join?
+#0 is instant check.
+#In ticks. 1 seconds = 20 ticks
+check-delay: 0
+
+
+log-resolved-translations: true
