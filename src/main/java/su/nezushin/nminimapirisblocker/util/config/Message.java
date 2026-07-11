@@ -16,7 +16,8 @@ import java.util.List;
 
 public enum Message {
 
-    delete_mods_to_access_the_command;
+    delete_mods_to_access_the_command, list_players_header, list_players_entry, player_not_found, probe_result_header, probe_resolved_translations, probe_resolved_translations_entry, probe_start, reload_start, reload_complete, reload_failed,
+    have_restricted, timeout, success, help, insufficient_permissions;
 
     private static BukkitAudiences adventure;
 
@@ -119,9 +120,9 @@ public enum Message {
         public Sender send(CommandSender p) {
             var adventureSender = adventure.sender(p);
 
-
-            for (var msg : message)
+            for (var msg : message) {
                 adventureSender.sendMessage(MiniMessage.miniMessage().deserialize(msg));
+            }
 
             //for (var msg : message)
             //p.sendMessage(MiniMessage.miniMessage().deserialize(msg));

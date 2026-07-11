@@ -1,0 +1,29 @@
+
+reload_start: "<#008f9a>Reloading..."
+reload_complete: "<#08c0c2>Reload complete!"
+reload_failed: "<#008f9a>Reload failed! Check console to view detailed error"
+
+insufficient_permissions: "<red>Insufficient permissions!"
+
+delete_mods_to_access_the_command: "<red>Your shaders are incompatible with minimap. Please delete Iris mod and rejoin server"
+
+
+list_players_header: "<#008f9a>Players with restrictions:"
+list_players_entry: "<#008f9a>{player}"
+
+player_not_found: "<red>Player not found!"
+probe_resolved_translations: "<#008f9a>Resolved translations:"
+probe_resolved_translations_entry: "<#08c0c2>{translation}<#008f9a>=<#08c0c2>{resolved}"
+probe_start: "<#008f9a>Starting check..."
+probe_result_header: "<#008f9a>Player check result: <#08c0c2>{result}"
+
+have_restricted: "Have restricted"
+timeout: "Timeout"
+success: "Success"
+
+
+help:
+  - '<reset><gray>----------<#008f9a>NMinimapIrisBlocker help<reset><gray>---------'
+  - "<reset><#08c0c2><click:suggest_command:'/mib reload'>/mib <#08c0c2>reload <#008f9a>reload plugin"
+  - "<reset><#08c0c2><click:suggest_command:'/mib probe'>/mib <#08c0c2>probe <#008f9a>manually check if player has restricted mods"
+  - "<reset><#08c0c2><click:suggest_command:'/mib players '>/mib <#08c0c2>players <#008f9a>list players with restricted mods"

@@ -1,22 +1,31 @@
-package su.nezushin.nminimapirisblocker;
+package su.nezushin.nminimapirisblocker.checker;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.events.PacketAdapter;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.BlockPosition;
-import com.google.common.collect.Lists;
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerCommon;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.world.blockentity.BlockEntityTypes;
+import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenSignEditor;
+import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUpdateSign;
+import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
+import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import net.kyori.adventure.platform.bukkit.BukkitComponentSerializer;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.NBTComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
+import su.nezushin.nminimapirisblocker.NMinimapIrisBlocker;
+import su.nezushin.nminimapirisblocker.util.SchedulerUtil;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class SignChecker {
 
@@ -41,19 +50,22 @@ public class SignChecker {
 
     }
 
-    private static PacketAdapter adapter = new PacketAdapter(NMinimapIrisBlocker.getInstance(), PacketType.Play.Client.UPDATE_SIGN) {
-        @Override
-        public void onPacketReceiving(PacketEvent event) {
-            var packet = event.getPacket();
-            var callback = callbacks.get(event.getPlayer());
-            if (callback == null)
-                return;
-            callback.run(Arrays.asList(packet.getStringArrays().read(0)));
-        }
-    };
+
+    private static PacketListenerCommon packetListener;
 
     public static void register() {
-        ProtocolLibrary.getProtocolManager().addPacketListener(adapter);
+        packetListener = PacketEvents.getAPI().getEventManager().registerListener(new PacketListener() {
+            public void onPacketReceive(PacketReceiveEvent event) {
+                if (!event.getPacketType().equals(PacketType.Play.Client.UPDATE_SIGN))
+                    return;
+
+                var packet = new WrapperPlayClientUpdateSign(event);
+                var callback = callbacks.get(event.getPlayer());
+                if (callback == null)
+                    return;
+                callback.run(Arrays.asList(packet.getTextLines()));
+            }
+        }, PacketListenerPriority.LOW);
 
     }
 
@@ -62,11 +74,12 @@ public class SignChecker {
     }
 
     public static void unregister() {
-        ProtocolLibrary.getProtocolManager().removePacketListener(adapter);
+        PacketEvents.getAPI().getEventManager().unregisterListener(packetListener);
     }
 
 
-    public static void probe(Player p, Callback<SignCheckData> callback, List<String> checks) {
+    public static CompletableFuture<SignCheckData> probe(Player p, List<String> checks) {
+        var callback = new CompletableFuture<SignCheckData>();
 
         List<String> remainingChecks = new ArrayList<>(checks);
 
@@ -77,7 +90,7 @@ public class SignChecker {
         Runnable timeoutCallback = () -> {
             callbacks.remove(p);
             timeouts.remove(p);
-            callback.run(new SignCheckData(SignCheckResult.TIMEOUT, resolved));
+            callback.complete(new SignCheckData(SignCheckResult.TIMEOUT, resolved));
         };
 
         Callback<List<String>> packetCallback = (List<String> translations) -> {
@@ -92,14 +105,13 @@ public class SignChecker {
 
             callbacks.remove(p);
 
-
-            if (checks.stream().noneMatch(resolved::containsKey)) {
-                callback.run(new SignCheckData(SignCheckResult.HAVE_RESTRICTED, resolved));
+            if (checks.stream().anyMatch(resolved::containsKey)) {
+                callback.complete(new SignCheckData(SignCheckResult.HAVE_RESTRICTED, resolved));
                 return;
             }
 
 
-            callback.run(new SignCheckData(SignCheckResult.SUCCESS, resolved));
+            callback.complete(new SignCheckData(SignCheckResult.SUCCESS, resolved));
         };
 
         timeouts.put(p, Bukkit.getScheduler().scheduleSyncDelayedTask(NMinimapIrisBlocker.getInstance(), timeoutCallback, 20));
@@ -107,6 +119,7 @@ public class SignChecker {
         callbacks.put(p, packetCallback);
 
         openSignEditor(p, remainingChecks, currentTranslations);
+        return callback;
     }
 
 
@@ -121,18 +134,21 @@ public class SignChecker {
     }
 
     private static void openSignEditor(Player p, List<String> remainingChecks, List<String> currentTranslations) {
-        Location loc = p.getLocation();
+        Location loc = p.getLocation().toBlockLocation();
         Sign sign = (Sign) Bukkit.createBlockData(Material.OAK_SIGN).createBlockState();
 
         var side = sign.getSide(Side.FRONT);
 
         for (var i = 0; i < 4 && i < remainingChecks.size(); i++) {
             String s = remainingChecks.remove(0);
-            side.setLine(i, BukkitComponentSerializer.legacy().serialize(Component.translatable(s)));
+            //side.line(i, BukkitComponentSerializer.legacy().serialize(Component.translatable(s)));
+            side.line(i, Component.translatable(s));
             currentTranslations.add(s);
         }
+
         p.sendBlockChange(loc, sign.getBlockData());
         p.sendBlockUpdate(loc, sign);
+
         openSign(p, loc);
         //Bukkit.getScheduler().scheduleSyncDelayedTask(Items.getInstance(), () -> {
         p.sendBlockChange(loc, loc.getBlock().getBlockData());
@@ -141,14 +157,13 @@ public class SignChecker {
     }
 
     private static void openSign(Player p, Location loc) {
-        var manager = ProtocolLibrary.getProtocolManager();
-        PacketContainer packet = manager.createPacket(PacketType.Play.Server.OPEN_SIGN_EDITOR, true);
-        packet.getBlockPositionModifier().write(0,
-                new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()));
-
-        packet.getBooleans().write(0, true);
-
-        manager.sendServerPacket(p, packet);
+        sendPackets(p, new WrapperPlayServerOpenSignEditor(SpigotConversionUtil.fromBukkitLocation(loc).getPosition().toVector3i(), true));
     }
+
+    public static void sendPackets(Player p, PacketWrapper<?>... wrappers) {
+        for (var i : wrappers)
+            PacketEvents.getAPI().getPlayerManager().sendPacket(p, i);
+    }
+
 
 }
