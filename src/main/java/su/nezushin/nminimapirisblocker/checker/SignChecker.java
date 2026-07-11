@@ -26,30 +26,21 @@ import su.nezushin.nminimapirisblocker.util.SchedulerUtil;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SignChecker {
 
 
-    private static Map<Player, Integer> timeouts = new HashMap<>();
+    private static Map<Player, SchedulerUtil.RunningTask> timeouts = new ConcurrentHashMap<>();
 
-    private static Map<Player, Callback<List<String>>> callbacks = new HashMap<>();
+    private static Map<Player, Callback<List<String>>> callbacks = new ConcurrentHashMap<>();
 
-    public static enum SignCheckResult {
-        HAVE_RESTRICTED,
-        TIMEOUT,
-        SUCCESS
-    }
 
-    public static interface Callback<T> {
+    private interface Callback<T> {
 
         public void run(T translations);
 
     }
-
-    public static record SignCheckData(SignCheckResult result, Map<String, String> resolved) {
-
-    }
-
 
     private static PacketListenerCommon packetListener;
 
@@ -63,7 +54,7 @@ public class SignChecker {
                 var callback = callbacks.get(event.getPlayer());
                 if (callback == null)
                     return;
-                callback.run(Arrays.asList(packet.getTextLines()));
+                SchedulerUtil.getScheduler().async(() -> callback.run(Arrays.asList(packet.getTextLines())), 0);
             }
         }, PacketListenerPriority.LOW);
 
@@ -94,11 +85,12 @@ public class SignChecker {
         };
 
         Callback<List<String>> packetCallback = (List<String> translations) -> {
-            Bukkit.getScheduler().cancelTask(timeouts.get(p));
+            var timeout = timeouts.get(p);
+            if(timeout != null) timeout.cancel();
             check(translations, currentTranslations, resolved);
             currentTranslations.clear();
             if (!remainingChecks.isEmpty()) {
-                timeouts.put(p, Bukkit.getScheduler().scheduleSyncDelayedTask(NMinimapIrisBlocker.getInstance(), timeoutCallback, 20));
+                timeouts.put(p, SchedulerUtil.getScheduler().async(timeoutCallback, 40));
                 openSignEditor(p, remainingChecks, currentTranslations);
                 return;
             }
@@ -114,7 +106,8 @@ public class SignChecker {
             callback.complete(new SignCheckData(SignCheckResult.SUCCESS, resolved));
         };
 
-        timeouts.put(p, Bukkit.getScheduler().scheduleSyncDelayedTask(NMinimapIrisBlocker.getInstance(), timeoutCallback, 20));
+        timeouts.put(p, SchedulerUtil.getScheduler().async(timeoutCallback, 20));
+        ;
 
         callbacks.put(p, packetCallback);
 
@@ -134,7 +127,8 @@ public class SignChecker {
     }
 
     private static void openSignEditor(Player p, List<String> remainingChecks, List<String> currentTranslations) {
-        Location loc = p.getLocation().toBlockLocation();
+        Location loc = new Location(p.getWorld(), 0, 0, 0);
+
         Sign sign = (Sign) Bukkit.createBlockData(Material.OAK_SIGN).createBlockState();
 
         var side = sign.getSide(Side.FRONT);
@@ -150,9 +144,9 @@ public class SignChecker {
         p.sendBlockUpdate(loc, sign);
 
         openSign(p, loc);
-        //Bukkit.getScheduler().scheduleSyncDelayedTask(Items.getInstance(), () -> {
+        SchedulerUtil.getScheduler().async(() -> {
         p.sendBlockChange(loc, loc.getBlock().getBlockData());
-        //});
+        }, 1);
 
     }
 

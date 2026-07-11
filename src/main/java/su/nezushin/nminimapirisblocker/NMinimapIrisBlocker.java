@@ -5,6 +5,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import su.nezushin.nminimap.util.SchedulerUtil;
+import su.nezushin.nminimapirisblocker.api.ProbeCause;
+import su.nezushin.nminimapirisblocker.api.events.AsyncPlayerCheckDoneEvent;
+import su.nezushin.nminimapirisblocker.checker.SignCheckData;
+import su.nezushin.nminimapirisblocker.checker.SignCheckResult;
 import su.nezushin.nminimapirisblocker.checker.SignChecker;
 import su.nezushin.nminimapirisblocker.cmd.MibCommand;
 import su.nezushin.nminimapirisblocker.listeners.CommandListener;
@@ -71,22 +75,27 @@ public final class NMinimapIrisBlocker extends JavaPlugin {
      *
      * @param p player
      */
-    public CompletableFuture<SignChecker.SignCheckData> probe(Player p) {
-        var future = new CompletableFuture<SignChecker.SignCheckData>();
+    public CompletableFuture<SignCheckData> probe(Player p, ProbeCause cause) {
+        var future = new CompletableFuture<SignCheckData>();
         SignChecker.probe(p, Config.restrictedTranslations)
                 .thenAccept(result -> {
-                    NMinimapIrisBlocker.getInstance().getLogger().info("Sign check done for " + p.getName() + ": " + result.result());
-                    if (result.result() == SignChecker.SignCheckResult.HAVE_RESTRICTED) {
-                        if (Config.logResolvedTranslations)
-                            NMinimapIrisBlocker.getInstance().getLogger().info(p.getName() + "'s resolved translations: " +
-                                    result.resolved().entrySet().stream()
-                                            .map(i -> i.getKey() + "=" + i.getValue())
-                                            .reduce("", (first, second) ->
-                                                    first + "\n" + second));
-                        if (!p.hasPermission("nminimap.skip-check"))
-                            NMinimapIrisBlocker.getInstance().getBlockedPlayers().add(p);
+                    try {
+                        NMinimapIrisBlocker.getInstance().getLogger().info("Sign check done for " + p.getName() + ": " + result.result());
+                        if (result.result() == SignCheckResult.HAVE_RESTRICTED) {
+                            if (Config.logResolvedTranslations)
+                                NMinimapIrisBlocker.getInstance().getLogger().info(p.getName() + "'s resolved translations: " +
+                                        result.resolved().entrySet().stream()
+                                                .map(i -> i.getKey() + "=" + i.getValue())
+                                                .reduce("", (first, second) ->
+                                                        first + "\n" + second));
+                            if (!p.hasPermission("nminimap.skip-check"))
+                                NMinimapIrisBlocker.getInstance().getBlockedPlayers().add(p);
+                        }
+                        Bukkit.getPluginManager().callEvent(new AsyncPlayerCheckDoneEvent(p, result, cause));
+                        future.complete(result);
+                    }catch (Exception ex){
+                        ex.printStackTrace();
                     }
-                    future.complete(result);
                 });
 
         return future;

@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimapirisblocker.NMinimapIrisBlocker;
+import su.nezushin.nminimapirisblocker.api.ProbeCause;
 import su.nezushin.nminimapirisblocker.util.config.Message;
 
 import java.util.List;
@@ -43,7 +44,7 @@ public class MibCommand implements CommandExecutor, TabCompleter {
             }
 
             Message.probe_start.send(sender);
-            NMinimapIrisBlocker.getInstance().probe(target)
+            NMinimapIrisBlocker.getInstance().probe(target, ProbeCause.COMMAND)
                     .thenAccept(result -> {
                         try {
 
@@ -59,7 +60,7 @@ public class MibCommand implements CommandExecutor, TabCompleter {
                         }
                     });
             return true;
-        } else if (args.length > 1 && args[0].equalsIgnoreCase("reload")) {
+        } else if (args.length >= 1 && args[0].equalsIgnoreCase("reload")) {
             Message.reload_start.send(sender);
             try {
                 var nminimap = NMinimapIrisBlocker.getInstance();

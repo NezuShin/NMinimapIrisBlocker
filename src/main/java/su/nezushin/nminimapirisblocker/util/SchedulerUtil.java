@@ -36,7 +36,7 @@ public class SchedulerUtil {
 
         public RunningTask async(Runnable run, long delay, long period);
 
-        public void async(Runnable run, long delay);
+        public RunningTask async(Runnable run, long delay);
 
         public void sync(Runnable run);
 
@@ -58,9 +58,9 @@ public class SchedulerUtil {
         }
 
         @Override
-        public void async(Runnable run, long delay) {
-            Bukkit.getScheduler().runTaskLaterAsynchronously(NMinimapIrisBlocker.getInstance(), run, delay);
-
+        public RunningTask async(Runnable run, long delay) {
+            var task = Bukkit.getScheduler().runTaskLaterAsynchronously(NMinimapIrisBlocker.getInstance(), run, delay);
+            return task::cancel;
         }
 
         @Override
@@ -93,12 +93,13 @@ public class SchedulerUtil {
         }
 
         @Override
-        public void async(Runnable run, long delay) {
-            Bukkit.getAsyncScheduler().runDelayed(NMinimapIrisBlocker.getInstance(), (ScheduledTask scheduledTask) -> {
+        public RunningTask async(Runnable run, long delay) {
+            var task = Bukkit.getAsyncScheduler().runDelayed(NMinimapIrisBlocker.getInstance(), (ScheduledTask scheduledTask) -> {
                         run.run();
                     },
                     delay * 50L, TimeUnit.MILLISECONDS
             );
+            return task::cancel;
         }
 
         @Override

@@ -24,6 +24,6 @@ success: "Success"
 
 help:
   - '<reset><gray>----------<#008f9a>NMinimapIrisBlocker help<reset><gray>---------'
-  - "<reset><#08c0c2><click:suggest_command:'/mib reload'>/mib <#08c0c2>reload <#008f9a>reload plugin"
+  - "<reset><#08c0c2><click:suggest_command:'/mib reload'>/mib <#08c0c2>reload <#008f9a>reload the plugin"
   - "<reset><#08c0c2><click:suggest_command:'/mib probe'>/mib <#08c0c2>probe <#008f9a>manually check if player has restricted mods"
   - "<reset><#08c0c2><click:suggest_command:'/mib players '>/mib <#08c0c2>players <#008f9a>list players with restricted mods"

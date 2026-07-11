@@ -20,9 +20,9 @@ public class Config {
 
     public static String langName;
 
-    public static int checkDelay;
+    public static int checkDelay, timeoutRetryDelay, maxRetries;
 
-    public static boolean logResolvedTranslations;
+    public static boolean logResolvedTranslations, timeoutRetryEnable;
 
     public static void init() {
         var plugin = NMinimapIrisBlocker.getInstance();
@@ -58,6 +58,10 @@ public class Config {
         checkDelay = config.getInt("check-delay", 0);
 
         logResolvedTranslations = config.getBoolean("log-resolved-translations", true);
+
+        timeoutRetryEnable = config.getBoolean("retries.enable", true);
+        timeoutRetryDelay = config.getInt("retries.delay", 20);
+        maxRetries = config.getInt("retries.max-retries");
 
         Message.load();
     }

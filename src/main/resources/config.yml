@@ -1,4 +1,3 @@
-
 language: en_US
 
 blocked-commands:
@@ -15,7 +14,16 @@ restricted-translations:
 #How much wait after player join?
 #0 is instant check.
 #In ticks. 1 seconds = 20 ticks
-check-delay: 0
+check-delay: 20
+
+
+#If check result is TIMEOUT, plugin can retry check
+#Works only when player joins server
+retries:
+  enable: true
+  max-retries: 4
+  #How much wait after failed try?
+  delay: 40
 
 
 log-resolved-translations: true
