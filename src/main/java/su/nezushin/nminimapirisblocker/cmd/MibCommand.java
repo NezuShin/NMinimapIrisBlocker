@@ -33,7 +33,7 @@ public class MibCommand implements CommandExecutor, TabCompleter {
                 Message.list_players_entry.replace("{player}", i.getName()).send(sender);
 
             return true;
-        } else if (args.length > 1 && args[0].equalsIgnoreCase("check")) {
+        } else if (args.length > 1 && args[0].equalsIgnoreCase("probe")) {
 
             var target = Bukkit.getPlayerExact(args[1]);
 
@@ -81,7 +81,7 @@ public class MibCommand implements CommandExecutor, TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String @NotNull [] args) {
         if (args.length == 1) {
-            return Lists.newArrayList("reload", "players", "check")
+            return Lists.newArrayList("reload", "players", "probe")
                     .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[0])).toList();
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("check"))

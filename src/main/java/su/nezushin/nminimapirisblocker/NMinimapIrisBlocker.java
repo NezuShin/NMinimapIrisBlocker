@@ -6,6 +6,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import su.nezushin.nminimapirisblocker.api.ProbeCause;
 import su.nezushin.nminimapirisblocker.api.events.AsyncPlayerCheckDoneEvent;
+import su.nezushin.nminimapirisblocker.bstats.Metrics;
 import su.nezushin.nminimapirisblocker.checker.records.SignCheckData;
 import su.nezushin.nminimapirisblocker.checker.SignCheckResult;
 import su.nezushin.nminimapirisblocker.checker.SignChecker;
@@ -31,6 +32,10 @@ public final class NMinimapIrisBlocker extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+
+        int pluginId = 32589;
+        Metrics metrics = new Metrics(this, pluginId);
+
         load();
     }
 

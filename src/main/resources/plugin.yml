@@ -1,5 +1,5 @@
 name: NMinimapIrisBlocker
-version: '1.0-SNAPSHOT'
+version: '1.0.0'
 main: su.nezushin.nminimapirisblocker.NMinimapIrisBlocker
 api-version: '1.21'
 softdepend: [packetevents, NMinimap]
