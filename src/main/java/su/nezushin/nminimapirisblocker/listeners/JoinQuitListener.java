@@ -43,6 +43,8 @@ public class JoinQuitListener implements Listener {
     }
 
     private void check(Player p, int delay) {
+        if (!p.isOnline())
+            return;
         Runnable run = () -> {
             NMinimapIrisBlocker.getInstance().probe(p, ProbeCause.JOIN);
         };
@@ -58,6 +60,6 @@ public class JoinQuitListener implements Listener {
         var p = e.getPlayer();
         retries.remove(p);
         NMinimapIrisBlocker.getInstance().getBlockedPlayers().remove(p);
-        SignChecker.clearPlayer(p);
+        NMinimapIrisBlocker.getInstance().getChecker().clearPlayer(p);
     }
 }

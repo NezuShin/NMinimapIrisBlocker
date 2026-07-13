@@ -4,16 +4,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
-import su.nezushin.nminimap.util.SchedulerUtil;
 import su.nezushin.nminimapirisblocker.api.ProbeCause;
 import su.nezushin.nminimapirisblocker.api.events.AsyncPlayerCheckDoneEvent;
-import su.nezushin.nminimapirisblocker.checker.SignCheckData;
+import su.nezushin.nminimapirisblocker.checker.records.SignCheckData;
 import su.nezushin.nminimapirisblocker.checker.SignCheckResult;
 import su.nezushin.nminimapirisblocker.checker.SignChecker;
 import su.nezushin.nminimapirisblocker.cmd.MibCommand;
 import su.nezushin.nminimapirisblocker.listeners.CommandListener;
 import su.nezushin.nminimapirisblocker.listeners.JoinQuitListener;
 import su.nezushin.nminimapirisblocker.listeners.NMinimapRenderListener;
+import su.nezushin.nminimapirisblocker.util.SchedulerUtil;
 import su.nezushin.nminimapirisblocker.util.config.Config;
 
 import java.util.Set;
@@ -23,6 +23,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class NMinimapIrisBlocker extends JavaPlugin {
 
     private static NMinimapIrisBlocker instance;
+
+    private SignChecker checker;
 
     private final Set<Player> blockedPlayers = ConcurrentHashMap.newKeySet();
 
@@ -40,15 +42,22 @@ public final class NMinimapIrisBlocker extends JavaPlugin {
     public void unload() {
         HandlerList.unregisterAll(this);
         SchedulerUtil.getScheduler().cancelAllTasks();
-        SignChecker.unregister();
+        checker.unregister();
     }
 
     public void load() {
         getCommand("mib").setExecutor(new MibCommand());
         Config.init();
 
-        if (!Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
-            this.getLogger().severe("Packetevents plugin is not found. It is mandatory dependency. Please download it from https://www.spigotmc.org/resources/packetevents-api.80279/");
+
+        checker = new SignChecker();
+        ;
+
+
+
+        if (!checker.register()) {
+            this.getLogger().severe("This plugin requires Packetevents or ProtocolLib installed on server." +
+                    " Neither were found. (ProtocolLib performs better) Please download it from https://www.spigotmc.org/resources/protocollib.1997/");
             setEnabled(false);
             return;
         }
@@ -59,10 +68,6 @@ public final class NMinimapIrisBlocker extends JavaPlugin {
         }
         Bukkit.getPluginManager().registerEvents(new JoinQuitListener(), getInstance());
         Bukkit.getPluginManager().registerEvents(new CommandListener(), getInstance());
-
-
-        SignChecker.register();
-
     }
 
     public void reload() {
@@ -77,7 +82,7 @@ public final class NMinimapIrisBlocker extends JavaPlugin {
      */
     public CompletableFuture<SignCheckData> probe(Player p, ProbeCause cause) {
         var future = new CompletableFuture<SignCheckData>();
-        SignChecker.probe(p, Config.restrictedTranslations)
+        checker.probe(p, Config.restrictedTranslations)
                 .thenAccept(result -> {
                     try {
                         NMinimapIrisBlocker.getInstance().getLogger().info("Sign check done for " + p.getName() + ": " + result.result());
@@ -107,5 +112,9 @@ public final class NMinimapIrisBlocker extends JavaPlugin {
 
     public Set<Player> getBlockedPlayers() {
         return blockedPlayers;
+    }
+
+    public SignChecker getChecker() {
+        return checker;
     }
 }

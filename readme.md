@@ -4,7 +4,7 @@ Sign-check mods detector. Designed to use with [NMinimap](https://github.com/Nez
 
 ### Dependencies
 
-- [Packet events](https://www.spigotmc.org/resources/packetevents-api.80279/)
+- [Packet events](https://www.spigotmc.org/resources/packetevents-api.80279/) or [ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/) (works better)
 - [NMinimap](https://github.com/NezuShin/NMinimap) (Optional)
 
 ### Permissions

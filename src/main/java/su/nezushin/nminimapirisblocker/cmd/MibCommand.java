@@ -10,7 +10,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import su.nezushin.nminimap.NMinimap;
 import su.nezushin.nminimapirisblocker.NMinimapIrisBlocker;
 import su.nezushin.nminimapirisblocker.api.ProbeCause;
 import su.nezushin.nminimapirisblocker.util.config.Message;
@@ -69,7 +68,7 @@ public class MibCommand implements CommandExecutor, TabCompleter {
                 Message.reload_complete.send(sender);
             } catch (Exception ex) {
                 Message.reload_failed.send(sender);
-                NMinimap.getInstance().getLogger().log(Level.SEVERE, "Failed to reload plugin: ", ex);
+                NMinimapIrisBlocker.getInstance().getLogger().log(Level.SEVERE, "Failed to reload plugin: ", ex);
             }
             return true;
         }

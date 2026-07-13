@@ -1,27 +1,25 @@
 package su.nezushin.nminimapirisblocker.checker;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.event.PacketListener;
-import com.github.retrooper.packetevents.event.PacketListenerCommon;
-import com.github.retrooper.packetevents.event.PacketListenerPriority;
-import com.github.retrooper.packetevents.event.PacketReceiveEvent;
+import com.github.retrooper.packetevents.event.*;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import com.github.retrooper.packetevents.protocol.world.blockentity.BlockEntityTypes;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerOpenSignEditor;
 import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientUpdateSign;
-import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
-import net.kyori.adventure.platform.bukkit.BukkitComponentSerializer;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.NBTComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
-import su.nezushin.nminimapirisblocker.NMinimapIrisBlocker;
+import su.nezushin.nminimapirisblocker.checker.impl.PacketeventsPacketHandler;
+import su.nezushin.nminimapirisblocker.checker.impl.ProtocolLibPacketHandler;
+import su.nezushin.nminimapirisblocker.checker.interfaces.Callback;
+import su.nezushin.nminimapirisblocker.checker.interfaces.PacketHandler;
+import su.nezushin.nminimapirisblocker.checker.records.PacketData;
+import su.nezushin.nminimapirisblocker.checker.records.SignCheckData;
 import su.nezushin.nminimapirisblocker.util.SchedulerUtil;
 
 import java.util.*;
@@ -31,45 +29,45 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SignChecker {
 
 
-    private static Map<Player, SchedulerUtil.RunningTask> timeouts = new ConcurrentHashMap<>();
+    private Map<Player, SchedulerUtil.RunningTask> timeouts = new ConcurrentHashMap<>();
 
-    private static Map<Player, Callback<List<String>>> callbacks = new ConcurrentHashMap<>();
+    private Map<Player, Callback<List<String>>> callbacks = new ConcurrentHashMap<>();
 
+    private PacketHandler packetHandler;
 
-    private interface Callback<T> {
+    public boolean register() {
 
-        public void run(T translations);
+        if (Bukkit.getPluginManager().isPluginEnabled("ProtocolLib")) {
 
+            packetHandler = new ProtocolLibPacketHandler();
+            packetHandler.register(this::onSignPacketReceive);
+
+            return true;
+        } else if (Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
+            packetHandler = new PacketeventsPacketHandler();
+            packetHandler.register(this::onSignPacketReceive);
+            return true;
+        }
+        return false;
     }
 
-    private static PacketListenerCommon packetListener;
-
-    public static void register() {
-        packetListener = PacketEvents.getAPI().getEventManager().registerListener(new PacketListener() {
-            public void onPacketReceive(PacketReceiveEvent event) {
-                if (!event.getPacketType().equals(PacketType.Play.Client.UPDATE_SIGN))
-                    return;
-
-                var packet = new WrapperPlayClientUpdateSign(event);
-                var callback = callbacks.get(event.getPlayer());
-                if (callback == null)
-                    return;
-                SchedulerUtil.getScheduler().async(() -> callback.run(Arrays.asList(packet.getTextLines())), 0);
-            }
-        }, PacketListenerPriority.LOW);
-
-    }
-
-    public static void clearPlayer(Player p) {
+    public void clearPlayer(Player p) {
         callbacks.remove(p);
     }
 
-    public static void unregister() {
-        PacketEvents.getAPI().getEventManager().unregisterListener(packetListener);
+    public void unregister() {
+        if(packetHandler != null)
+            packetHandler.unregister();
+    }
+
+    private void onSignPacketReceive(PacketData data){
+        var callback = callbacks.get(data.player());
+        if(callback != null)
+            callback.run(data.translations());
     }
 
 
-    public static CompletableFuture<SignCheckData> probe(Player p, List<String> checks) {
+    public CompletableFuture<SignCheckData> probe(Player p, List<String> checks) {
         var callback = new CompletableFuture<SignCheckData>();
 
         List<String> remainingChecks = new ArrayList<>(checks);
@@ -86,7 +84,7 @@ public class SignChecker {
 
         Callback<List<String>> packetCallback = (List<String> translations) -> {
             var timeout = timeouts.get(p);
-            if(timeout != null) timeout.cancel();
+            if (timeout != null) timeout.cancel();
             check(translations, currentTranslations, resolved);
             currentTranslations.clear();
             if (!remainingChecks.isEmpty()) {
@@ -126,8 +124,8 @@ public class SignChecker {
         }
     }
 
-    private static void openSignEditor(Player p, List<String> remainingChecks, List<String> currentTranslations) {
-        Location loc = new Location(p.getWorld(), 0, 0, 0);
+    private void openSignEditor(Player p, List<String> remainingChecks, List<String> currentTranslations) {
+        Location loc = p.getLocation().toBlockLocation();
 
         Sign sign = (Sign) Bukkit.createBlockData(Material.OAK_SIGN).createBlockState();
 
@@ -140,23 +138,19 @@ public class SignChecker {
             currentTranslations.add(s);
         }
 
+
         p.sendBlockChange(loc, sign.getBlockData());
         p.sendBlockUpdate(loc, sign);
 
         openSign(p, loc);
         SchedulerUtil.getScheduler().async(() -> {
-        p.sendBlockChange(loc, loc.getBlock().getBlockData());
+            p.sendBlockChange(loc, loc.getBlock().getBlockData());
         }, 1);
 
     }
 
-    private static void openSign(Player p, Location loc) {
-        sendPackets(p, new WrapperPlayServerOpenSignEditor(SpigotConversionUtil.fromBukkitLocation(loc).getPosition().toVector3i(), true));
-    }
-
-    public static void sendPackets(Player p, PacketWrapper<?>... wrappers) {
-        for (var i : wrappers)
-            PacketEvents.getAPI().getPlayerManager().sendPacket(p, i);
+    private void openSign(Player p, Location loc) {
+        this.packetHandler.openSign(p, loc);
     }
 
 
