@@ -1,6 +1,16 @@
 # NMinimapIrisBlocker
 Sign-check mods detector. Designed to use with [NMinimap](https://github.com/NezuShin/NMinimap) but can also work separately.
 
+### Features
+
+- Configurable mod list (via `restricted-translations` config property)
+- Configurable blocked commands for players with these mods installed.
+- On-join check for players
+- Automatic NMinimap disable for players with restrictions
+
+### Supported server platforms
+- [Papermc](https://papermc.io/software/paper/)
+- [Folia](https://papermc.io/software/folia/)
 
 ### Dependencies
 
@@ -12,11 +22,21 @@ Sign-check mods detector. Designed to use with [NMinimap](https://github.com/Nez
 - `nminimap.skip-check` - access to bypass sign check
 - `nminimap.admin` - access to admin features
 
+### Admin commands
+
+`/mib reload` - Reload plugin\
+`/mib probe <player>` - Force probe player. Restrictions will not apply if player has `nminimap.skip-check` permission\
+`/mib players` - Show list of players with restrictions 
+
 ### How does it work?
 
 Minecraft client can resolve translations components (e.g. `iris.shaders.reloaded`, `item.minecraft.diamond`, etc.) on signs. 
 Plugin utilizes it - opens and closes sign menu when player joining.
 
+### About packetevents
+
+For some reason sign check is works much worse with packetevents than with ProtocolLib with same code. I have not figured out why yet. 
+For now ProtocolLib runs flawlessly, so consider using ProtocolLib
 
 ### API
 
