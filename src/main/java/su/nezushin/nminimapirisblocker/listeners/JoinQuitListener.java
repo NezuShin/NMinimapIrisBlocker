@@ -52,7 +52,7 @@ public class JoinQuitListener implements Listener {
             return;//:(
 
         retries.put(p, retries.getOrDefault(p, 0) + 1);
-        SchedulerUtil.getScheduler().async(run, delay);
+        NMinimapIrisBlocker.getInstance().getScheduler().async(run, delay);
     }
 
     @EventHandler

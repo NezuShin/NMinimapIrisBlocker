@@ -6,45 +6,19 @@ import su.nezushin.nminimapirisblocker.NMinimapIrisBlocker;
 
 import java.util.concurrent.TimeUnit;
 
-
-//Folia compatibility
+// Folia compatibility
 public class SchedulerUtil {
 
-    private static Scheduler scheduler;
-
-    static {
+    public static Scheduler createScheduler() {
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
-            scheduler = new FoliaScheduler();
+            return new FoliaScheduler();
         } catch (ClassNotFoundException e) {
-            scheduler = new SpigotScheduler();
+            return new SpigotScheduler();
         }
     }
 
-    public static Scheduler getScheduler() {
-        return scheduler;
-    }
-
-    public static interface RunningTask {
-
-        public void cancel();
-    }
-
-    public static interface Scheduler {
-
-        public void cancelAllTasks();
-
-        public RunningTask async(Runnable run, long delay, long period);
-
-        public RunningTask async(Runnable run, long delay);
-
-        public void sync(Runnable run);
-
-        public boolean isFolia();
-    }
-
     private static class SpigotScheduler implements Scheduler {
-
 
         @Override
         public void cancelAllTasks() {

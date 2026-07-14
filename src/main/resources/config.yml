@@ -14,7 +14,7 @@ restricted-translations:
 #How much wait after player join?
 #0 is instant check.
 #In ticks. 1 seconds = 20 ticks
-check-delay: 20
+check-delay: 0
 
 
 #If check result is TIMEOUT, plugin can retry check
@@ -23,7 +23,7 @@ retries:
   enable: true
   max-retries: 4
   #How much wait after failed try?
-  delay: 40
+  delay: 10
 
 
 log-resolved-translations: true

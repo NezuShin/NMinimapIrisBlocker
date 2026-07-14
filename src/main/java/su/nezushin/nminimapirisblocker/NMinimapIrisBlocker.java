@@ -14,6 +14,7 @@ import su.nezushin.nminimapirisblocker.cmd.MibCommand;
 import su.nezushin.nminimapirisblocker.listeners.CommandListener;
 import su.nezushin.nminimapirisblocker.listeners.JoinQuitListener;
 import su.nezushin.nminimapirisblocker.listeners.NMinimapRenderListener;
+import su.nezushin.nminimapirisblocker.util.Scheduler;
 import su.nezushin.nminimapirisblocker.util.SchedulerUtil;
 import su.nezushin.nminimapirisblocker.util.config.Config;
 
@@ -26,6 +27,8 @@ public final class NMinimapIrisBlocker extends JavaPlugin {
     private static NMinimapIrisBlocker instance;
 
     private SignChecker checker;
+
+    private Scheduler scheduler;
 
     private final Set<Player> blockedPlayers = ConcurrentHashMap.newKeySet();
 
@@ -46,23 +49,23 @@ public final class NMinimapIrisBlocker extends JavaPlugin {
 
     public void unload() {
         HandlerList.unregisterAll(this);
-        SchedulerUtil.getScheduler().cancelAllTasks();
+        if (scheduler != null)
+            scheduler.cancelAllTasks();
         checker.unregister();
     }
 
     public void load() {
+        scheduler = SchedulerUtil.createScheduler();
+
         getCommand("mib").setExecutor(new MibCommand());
         Config.init();
 
 
         checker = new SignChecker();
-        ;
-
-
 
         if (!checker.register()) {
             this.getLogger().severe("This plugin requires Packetevents or ProtocolLib installed on server." +
-                    " Neither were found. (ProtocolLib performs better) Please download it from https://www.spigotmc.org/resources/protocollib.1997/");
+                    " Neither were found. Please download ProtocolLib from https://www.spigotmc.org/resources/protocollib.1997/");
             setEnabled(false);
             return;
         }
@@ -121,5 +124,9 @@ public final class NMinimapIrisBlocker extends JavaPlugin {
 
     public SignChecker getChecker() {
         return checker;
+    }
+
+    public Scheduler getScheduler() {
+        return scheduler;
     }
 }

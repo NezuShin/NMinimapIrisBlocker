@@ -14,7 +14,7 @@ Sign-check mods detector. Designed to use with [NMinimap](https://github.com/Nez
 
 ### Dependencies
 
-- [Packet events](https://www.spigotmc.org/resources/packetevents-api.80279/) or [ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/) (works better)
+- [Packet events](https://www.spigotmc.org/resources/packetevents-api.80279/) or [ProtocolLib](https://www.spigotmc.org/resources/protocollib.1997/)
 - [NMinimap](https://github.com/NezuShin/NMinimap) (Optional)
 
 ### Permissions
@@ -32,11 +32,6 @@ Sign-check mods detector. Designed to use with [NMinimap](https://github.com/Nez
 
 Minecraft client can resolve translations components (e.g. `iris.shaders.reloaded`, `item.minecraft.diamond`, etc.) on signs. 
 Plugin utilizes it - opens and closes sign menu when player joining.
-
-### About packetevents
-
-For some reason sign check is works much worse with packetevents than with ProtocolLib with same code. I have not figured out why yet. 
-For now ProtocolLib runs flawlessly, so consider using ProtocolLib
 
 ### API
 

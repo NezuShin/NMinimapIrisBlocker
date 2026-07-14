@@ -84,7 +84,7 @@ public class MibCommand implements CommandExecutor, TabCompleter {
             return Lists.newArrayList("reload", "players", "probe")
                     .stream().filter(i -> StringUtil.startsWithIgnoreCase(i, args[0])).toList();
         } else if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("check"))
+            if (args[0].equalsIgnoreCase("probe"))
                 return Bukkit.getOnlinePlayers().stream().map(Player::getName)
                         .filter(i -> StringUtil.startsWithIgnoreCase(i, args[1])).toList();
         }

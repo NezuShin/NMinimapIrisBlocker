@@ -1,14 +1,17 @@
 package su.nezushin.nminimapirisblocker.checker.interfaces;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import su.nezushin.nminimapirisblocker.checker.records.PacketData;
 
+import java.util.List;
+
 public interface PacketHandler {
 
-    public void openSign(Player p, Location loc);
+    void openSign(Player player, Location location, List<Component> lines);
 
-    public void register(Callback<PacketData> callback);
+    void register(Callback<PacketData> callback);
 
-    public void unregister();
+    void unregister();
 }
