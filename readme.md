@@ -1,6 +1,13 @@
 # NMinimapIrisBlocker
 Sign-check mods detector. Designed to use with [NMinimap](https://github.com/NezuShin/NMinimap) but can also work separately.
 
+
+## Project suspended until minecraft 26.3 release
+
+It seems mojang [broke](https://www.minecraft.net/en-us/article/minecraft-26-3-snapshot-4) way this plugin works.\
+I will perform some research after version release to find any another way to detect Iris from server.
+
+
 ### Features
 
 - Configurable mod list (via `restricted-translations` config property)
