@@ -18,7 +18,7 @@ public class Config {
 
     public static List<String> restrictedTranslations = new ArrayList<>();
 
-    public static String langName;
+    public static String langName, backend;
 
     public static int checkDelay, timeoutRetryDelay, maxRetries;
 
@@ -50,7 +50,7 @@ public class Config {
 
 
         langName = config.getString("language", "en_US");
-
+        backend = config.getString("backend", "ProtocolLib");
 
         blockedCommands = config.getStringList("blocked-commands");
         restrictedTranslations = config.getStringList("restricted-translations");

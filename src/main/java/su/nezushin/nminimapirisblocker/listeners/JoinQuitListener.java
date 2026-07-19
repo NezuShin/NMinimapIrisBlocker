@@ -8,9 +8,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import su.nezushin.nminimapirisblocker.NMinimapIrisBlocker;
 import su.nezushin.nminimapirisblocker.api.ProbeCause;
 import su.nezushin.nminimapirisblocker.api.events.AsyncPlayerCheckDoneEvent;
-import su.nezushin.nminimapirisblocker.checker.SignCheckResult;
-import su.nezushin.nminimapirisblocker.checker.SignChecker;
-import su.nezushin.nminimapirisblocker.util.SchedulerUtil;
+import su.nezushin.nminimapirisblocker.checker.CheckResult;
 import su.nezushin.nminimapirisblocker.util.config.Config;
 
 import java.util.HashMap;
@@ -37,7 +35,7 @@ public class JoinQuitListener implements Listener {
             return;
         if (!e.getCause().equals(ProbeCause.JOIN))
             return;
-        if (e.getResult().result() != SignCheckResult.TIMEOUT)
+        if (e.getResult().result() != CheckResult.TIMEOUT)
             return;
         check(e.getPlayer(), Config.timeoutRetryDelay);
     }

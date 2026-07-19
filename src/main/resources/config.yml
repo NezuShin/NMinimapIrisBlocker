@@ -25,5 +25,9 @@ retries:
   #How much wait after failed try?
   delay: 10
 
+#What api use for packet manipulation?
+#ProtocolLib or PacketEvents
+#This setting is only applied when both plugins are installed
+backend: ProtocolLib
 
 log-resolved-translations: true

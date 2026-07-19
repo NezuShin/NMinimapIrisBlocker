@@ -1,14 +1,15 @@
 package su.nezushin.nminimapirisblocker;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import su.nezushin.nminimapirisblocker.api.ProbeCause;
 import su.nezushin.nminimapirisblocker.api.events.AsyncPlayerCheckDoneEvent;
 import su.nezushin.nminimapirisblocker.bstats.Metrics;
-import su.nezushin.nminimapirisblocker.checker.records.SignCheckData;
-import su.nezushin.nminimapirisblocker.checker.SignCheckResult;
+import su.nezushin.nminimapirisblocker.checker.records.CheckData;
+import su.nezushin.nminimapirisblocker.checker.CheckResult;
 import su.nezushin.nminimapirisblocker.checker.SignChecker;
 import su.nezushin.nminimapirisblocker.cmd.MibCommand;
 import su.nezushin.nminimapirisblocker.listeners.CommandListener;
@@ -38,7 +39,6 @@ public final class NMinimapIrisBlocker extends JavaPlugin {
 
         int pluginId = 32589;
         Metrics metrics = new Metrics(this, pluginId);
-
         load();
     }
 
@@ -88,13 +88,13 @@ public final class NMinimapIrisBlocker extends JavaPlugin {
      *
      * @param p player
      */
-    public CompletableFuture<SignCheckData> probe(Player p, ProbeCause cause) {
-        var future = new CompletableFuture<SignCheckData>();
+    public CompletableFuture<CheckData> probe(Player p, ProbeCause cause) {
+        var future = new CompletableFuture<CheckData>();
         checker.probe(p, Config.restrictedTranslations)
                 .thenAccept(result -> {
                     try {
                         NMinimapIrisBlocker.getInstance().getLogger().info("Sign check done for " + p.getName() + ": " + result.result());
-                        if (result.result() == SignCheckResult.HAVE_RESTRICTED) {
+                        if (result.result() == CheckResult.HAVE_RESTRICTED) {
                             if (Config.logResolvedTranslations)
                                 NMinimapIrisBlocker.getInstance().getLogger().info(p.getName() + "'s resolved translations: " +
                                         result.resolved().entrySet().stream()

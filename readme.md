@@ -1,11 +1,5 @@
 # NMinimapIrisBlocker
-Sign-check mods detector. Designed to use with [NMinimap](https://github.com/NezuShin/NMinimap) but can also work separately.
-
-
-## Project suspended until minecraft 26.3 release
-
-It seems mojang [broke](https://www.minecraft.net/en-us/article/minecraft-26-3-snapshot-4) way this plugin works.\
-I will perform some research after version release to find any another way to detect Iris from server.
+Translation-resolve-method mods detector. Designed to use with [NMinimap](https://github.com/NezuShin/NMinimap) but can also work separately.
 
 
 ### Features
@@ -37,7 +31,7 @@ I will perform some research after version release to find any another way to de
 
 ### How does it work?
 
-Minecraft client can resolve translations components (e.g. `iris.shaders.reloaded`, `item.minecraft.diamond`, etc.) on signs. 
+Minecraft client can resolve translations components (e.g. `iris.shaders.reloaded`, `item.minecraft.diamond`, etc.). 
 Plugin utilizes it - opens and closes sign menu when player joining.
 
 ### API

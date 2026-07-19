@@ -1,6 +1,6 @@
 package su.nezushin.nminimapirisblocker.checker;
 
-public enum SignCheckResult {
+public enum CheckResult {
     HAVE_RESTRICTED,
     TIMEOUT,
     SUCCESS
